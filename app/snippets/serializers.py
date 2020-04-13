@@ -2,34 +2,62 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from snippets.models import Snippet
 
-"""Model Serializer"""
+
+"""Hyperlinking our API"""
 
 
-class SnippetSerializer(serializers.ModelSerializer):
-    owner = serializers.ReadOnlyField(source="owner.username")
+class SnippetSerializer(serializers.HyperlinkedModelSerializer):
+    owner = serializers.ReadOnlyField(source='owner.username')
+    highlight = serializers.HyperlinkedIdentityField(
+        view_name='snippet-highlight',
+        format='html'
+    )
 
     class Meta:
         model = Snippet
-        fields = [
-            "id",
-            "owner",
-            "title",
-            "code",
-            "linenos",
-            "language",
-            "style",
-        ]
-        read_only_fields = ["owner"]
+        fields = ['url', 'id', 'highlight', 'owner', 'title',
+                  'code', 'linenos', 'language', 'style']
 
 
-class UserSerializer(serializers.ModelSerializer):
-    snippets = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Snippet.objects.all()
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+    snippets = serializers.HyperlinkedRelatedField(
+        many=True,
+        view_name='snippet-detail',
+        read_only=True,
     )
 
     class Meta:
         model = User
-        fields = ["id", "username", "snippets"]
+        fields = ['url', 'id', 'username', 'snippets']
+
+
+"""Model Serializer"""
+# class SnippetSerializer(serializers.ModelSerializer):
+#     owner = serializers.ReadOnlyField(source="owner.username")
+
+#     class Meta:
+#         model = Snippet
+#         fields = [
+#             "id",
+#             "owner",
+#             "title",
+#             "code",
+#             "linenos",
+#             "language",
+#             "style",
+#         ]
+#         read_only_fields = ["owner"]
+
+
+# class UserSerializer(serializers.ModelSerializer):
+#     snippets = serializers.PrimaryKeyRelatedField(
+#         many=True,
+#         queryset=Snippet.objects.all()
+#     )
+
+#     class Meta:
+#         model = User
+#         fields = ["id", "username", "snippets"]
 
 
 """Normal serializer"""

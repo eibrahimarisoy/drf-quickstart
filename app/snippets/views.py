@@ -1,16 +1,17 @@
-"""Using generic class-based views"""
+"""Creating an endpoint for the root of our API"""
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.reverse import reverse
+
+# """Using generic class-based views"""
 from django.contrib.auth.models import User
 
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, renderers
 
 from snippets.models import Snippet
 from snippets.serializers import SnippetSerializer, UserSerializer
 from snippets.permissions import IsOwnerOrReadOnly
 
-"""Creating an endpoint for the root of our API"""
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework.reverse import reverse
 
 class SnippetList(generics.ListCreateAPIView):
     queryset = Snippet.objects.all()
@@ -39,17 +40,27 @@ class UserDetail(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+
 """Creating an endpoint for the root of our API"""
-@api_view
+@api_view(['GET'])
 def api_root(request, format=None):
     return Response(
         {
             "users": reverse("user-list", request=request, format=format),
             "snippets": reverse(
-                "snippet_list", request=request, format=format
+                "snippet-list", request=request, format=format
             ),
         }
     )
+
+
+class SnippetHighlight(generics.GenericAPIView):
+    queryset = Snippet.objects.all()
+    renderer_classes = [renderers.StaticHTMLRenderer, ]
+
+    def get(self, request, *args, **kwargs):
+        snippet = self.get_object()
+        return Response(snippet.highlighted)
 
 
 """Class based views with mixins"""
