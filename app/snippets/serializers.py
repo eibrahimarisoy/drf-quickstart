@@ -3,23 +3,34 @@ from rest_framework import serializers
 from snippets.models import Snippet
 
 """Model Serializer"""
+
+
 class SnippetSerializer(serializers.ModelSerializer):
-    owner = serializers.ReadOnlyField(source='owner.username')
+    owner = serializers.ReadOnlyField(source="owner.username")
 
     class Meta:
         model = Snippet
-        fields = ['id', 'owner', 'title', 'code', 'linenos', 'language', 'style']
-        read_only_fields = ['owner']
+        fields = [
+            "id",
+            "owner",
+            "title",
+            "code",
+            "linenos",
+            "language",
+            "style",
+        ]
+        read_only_fields = ["owner"]
+
 
 class UserSerializer(serializers.ModelSerializer):
     snippets = serializers.PrimaryKeyRelatedField(
-        many=True,
-        queryset = Snippet.objects.all(),
+        many=True, queryset=Snippet.objects.all()
     )
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'snippets']
+        fields = ["id", "username", "snippets"]
+
 
 """Normal serializer"""
 # class SnippetSerializer(serializers.Serializer):

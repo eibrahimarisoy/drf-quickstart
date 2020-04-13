@@ -1,4 +1,3 @@
-
 """Using generic class-based views"""
 from django.contrib.auth.models import User
 
@@ -8,10 +7,15 @@ from snippets.models import Snippet
 from snippets.serializers import SnippetSerializer, UserSerializer
 from snippets.permissions import IsOwnerOrReadOnly
 
+"""Creating an endpoint for the root of our API"""
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.reverse import reverse
+
 class SnippetList(generics.ListCreateAPIView):
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
@@ -20,12 +24,14 @@ class SnippetList(generics.ListCreateAPIView):
 class SnippetDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,
-                          IsOwnerOrReadOnly,]
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly,
+        IsOwnerOrReadOnly,
+    ]
 
 
 class UserList(generics.ListAPIView):
-    queryset = User.objects.all()    
+    queryset = User.objects.all()
     serializer_class = UserSerializer
 
 
@@ -33,7 +39,19 @@ class UserDetail(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    
+"""Creating an endpoint for the root of our API"""
+@api_view
+def api_root(request, format=None):
+    return Response(
+        {
+            "users": reverse("user-list", request=request, format=format),
+            "snippets": reverse(
+                "snippet_list", request=request, format=format
+            ),
+        }
+    )
+
+
 """Class based views with mixins"""
 # from rest_framework import generics
 # from rest_framework import mixins
